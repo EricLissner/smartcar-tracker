@@ -10,29 +10,34 @@
 <body>
   <div id="map"></div>
   <script>
-    // Create map
-    var map = L.map('map').setView([37.5, -95.7], 4);
+    var map = L.map('map');
 
-    // Base layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
 
-    // Marker
-    var truckLatLng = [33.793778, -117.883008];
-    var marker = L.marker(truckLatLng).addTo(map).bindPopup('2022 FORD F-150');
+    // All truck coordinates
+    var trucks = [
+      [33.911133, -117.47213998],  // 2022 FORD F-150
+      [33.970989, -117.049493],    // 2024 FORD F-250
+      [34.047147, -117.688443]     // 2024 FORD F-250
+    ];
 
-    // Zoom to the marker and open popup once the map is ready
-    map.whenReady(function () {
-      map.setView(truckLatLng, 11);   // pick your preferred zoom level (e.g., 14–17)
-      marker.openPopup();
-    });
+    // Add markers
+    L.marker(trucks[0]).addTo(map).bindPopup('2022 FORD F-150');
+    L.marker(trucks[1]).addTo(map).bindPopup('2024 FORD F-250');
+    L.marker(trucks[2]).addTo(map).bindPopup('2024 FORD F-250');
 
-    // Optional: smooth animation instead of jump
-    // map.whenReady(() => map.flyTo(truckLatLng, 15));
+    // Center map between all trucks, with zoom 11
+    var bounds = L.latLngBounds(trucks);
+    map.fitBounds(bounds);   // auto zooms to fit all markers
+    map.setZoom(11);         // force zoom level to 11
   </script>
 </body>
 </html>
 
     
+
 
 
 
