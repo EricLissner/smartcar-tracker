@@ -16,30 +16,25 @@
       maxZoom: 19
     }).addTo(map);
 
-    // All truck coordinates
+    // All truck coordinates + names
     var trucks = [
-      [33.911133, -117.47213998],  // 2022 FORD F-150
-      [33.970989, -117.049493],    // 2024 FORD F-250
-      [34.047147, -117.688443]     // 2024 FORD F-250
+      {coords: [33.911133, -117.47213998], name: '2022 FORD F-150'},
+      {coords: [33.970989, -117.049493],   name: '2024 FORD F-250'},
+      {coords: [34.047147, -117.688443],   name: '2024 FORD F-250'}
     ];
 
-    // Add markers
-    L.marker(trucks[0]).addTo(map).bindPopup('2022 FORD F-150');
-    L.marker(trucks[1]).addTo(map).bindPopup('2024 FORD F-250');
-    L.marker(trucks[2]).addTo(map).bindPopup('2024 FORD F-250');
+    var markers = [];
 
-    // Center map between all trucks, with zoom 11
-    var bounds = L.latLngBounds(trucks);
-    map.fitBounds(bounds);   // auto zooms to fit all markers
-    map.setZoom(10);         // force zoom level to 11
+    trucks.forEach(function(truck) {
+      var marker = L.marker(truck.coords).addTo(map);
+      marker.bindTooltip(truck.name, { permanent: true, direction: 'top', offset: [0, -10] });
+      markers.push(marker);
+    });
+
+    // Center the map to show all trucks at zoom 11
+    var bounds = L.latLngBounds(trucks.map(t => t.coords));
+    map.fitBounds(bounds);
+    map.setZoom(10);
   </script>
 </body>
 </html>
-
-    
-
-
-
-
-
-
