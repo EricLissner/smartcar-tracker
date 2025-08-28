@@ -1,23 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Truck Locations</title>
+  <meta charset="utf-8">
+  <style> html, body, #map { height: 100%; margin: 0; } </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // Create map
+    var map = L.map('map').setView([37.5, -95.7], 4);
 
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Truck Locations</title>
-        <meta charset='utf-8'>
-        <style> html, body, #map { height: 100%; margin: 0; } </style>
-        <link rel='stylesheet' href='https://unpkg.com/leaflet/dist/leaflet.css'/>
-        <script src='https://unpkg.com/leaflet/dist/leaflet.js'></script>
-    </head>
-    <body>
-        <div id='map'></div>
-        <script>
-            var map = L.map('map').setView([37.5, -95.7], 4);  // Centered US
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            }).addTo(map);
-    L.marker([33.793778, -117.883008]).addTo(map).bindPopup('2022 FORD F-150');
+    // Base layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-        </script>
-    </body>
-    </html>
+    // Marker
+    var truckLatLng = [33.793778, -117.883008];
+    var marker = L.marker(truckLatLng).addTo(map).bindPopup('2022 FORD F-150');
+
+    // Zoom to the marker and open popup once the map is ready
+    map.whenReady(function () {
+      map.setView(truckLatLng, 15);   // pick your preferred zoom level (e.g., 14–17)
+      marker.openPopup();
+    });
+
+    // Optional: smooth animation instead of jump
+    // map.whenReady(() => map.flyTo(truckLatLng, 15));
+  </script>
+</body>
+</html>
+
     
+
