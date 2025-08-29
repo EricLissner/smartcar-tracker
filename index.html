@@ -1,41 +1,65 @@
-<!DOCTYPE html>
+# ====== WEB (INDEX + JSON) ======
+INDEX_HTML = f"""<!doctype html>
 <html>
 <head>
-  <title>Truck Locations</title>
-  <meta charset="utf-8">
-  <style> html, body, #map { height: 100%; margin: 0; } </style>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <meta charset="utf-8" />
+  <title>Three Trucks — Live</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    html, body, #map {{ height:100%; margin:0; }}
+    .status {{ position:absolute; top:8px; left:8px; background:#fff; padding:6px 8px; border-radius:6px; font-family:sans-serif; box-shadow:0 1px 4px rgba(0,0,0,.2); z-index:9999; }}
+  </style>
 </head>
 <body>
+  <div class="status" id="status">Loading…</div>
   <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    var map = L.map('map');
+    const statusEl = document.getElementById('status');
+    const map = L.map('map');
+    L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{ maxZoom: 10 }}).addTo(map);
+    let markers = {{}};
+    let firstFit = true, userMoved = false;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-    }).addTo(map);
+    map.on('movestart', () => userMoved = true);
 
-    // All truck coordinates + names
-    var trucks = [
-      {coords: [33.911133, -117.47213998], name: 'Zaid'},
-      {coords: [33.970989, -117.049493],   name: 'Jacob'},
-      {coords: [34.047147, -117.688443],   name: 'Al'}
-    ];
+    async function refresh() {{
+      try {{
+        const r = await fetch('/locations?x=' + Date.now(), {{ cache: 'no-store' }});
+        const j = await r.json();
+        if (Array.isArray(j)) {{
+          const latlngs = [];
+          for (const v of j) {{
+            const latlng = [v.lat, v.lon];
+            latlngs.push(latlng);
+            const label = v.name + ' • age ' + v.age_s + 's';
+            if (!markers[v.id]) {{
+              const m = L.marker(latlng).addTo(map);
+              m.bindTooltip(label, {{ permanent: true, direction: 'top', offset: [0, -10] }});
+              markers[v.id] = m;
+            }} else {{
+              markers[v.id].setLatLng(latlng);
+              markers[v.id].setTooltipContent(label);
+            }}
+          }}
+          statusEl.textContent = 'Vehicles: ' + j.length;
+          if ((firstFit || !userMoved) && latlngs.length) {{
+            const bounds = L.latLngBounds(latlngs);
+            map.fitBounds(bounds, {{ padding: [30, 30] }});
+            firstFit = false;
+          }}
+        }} else {{
+          statusEl.textContent = j.error ? ('Error: ' + j.error) : 'No data';
+        }}
+      }} catch (e) {{
+        statusEl.textContent = 'Fetch failed: ' + e;
+      }}
+    }}
 
-    var markers = [];
-
-    trucks.forEach(function(truck) {
-      var marker = L.marker(truck.coords).addTo(map);
-      marker.bindTooltip(truck.name, { permanent: true, direction: 'top', offset: [0, -10] });
-      markers.push(marker);
-    });
-
-    // Center the map to show all trucks at zoom 11
-    var bounds = L.latLngBounds(trucks.map(t => t.coords));
-    map.fitBounds(bounds);
-    map.setZoom(10);
+    refresh();
+    setInterval(refresh, {POLL_SECONDS*1000});
   </script>
 </body>
 </html>
-
+"""
